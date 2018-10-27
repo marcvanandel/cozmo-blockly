@@ -644,3 +644,36 @@ Blockly.Blocks['cozmo_free_will'] = {
     });
   }
 };
+
+Blockly.Blocks['cozmo_stunt'] = {
+  init: function() {
+    this.jsonInit({
+      "message0": "Stunt!",
+      "args0": [
+        {
+          "type": "field_dropdown",
+          "name": "ANIMATION",
+          "options": [
+            ["greeting", "GREETING"],
+            ["sneeze", "SNEEZE"],
+            ["what?", "WHAT"],
+            ["win", "WIN"],
+            ["lose", "LOSE"],
+            ["facepalm", "FACEPALM"],
+            ["beeping", "BEEPING"],
+            ["new object", "NEW_OBJECT"],
+            ["lost something", "LOST_SOMETHING"],
+            ["reject", "REJECT"],
+            ["failed", "FAILED"],
+            ["excited greeting", "EXCITED_GREETING"],
+            ["talky greeting", "TALKY_GREETING"]
+          ]
+        }
+      ],
+      "colour": Blockly.Blocks.cozmo.HUE2,
+      "previousStatement": null,
+      "nextStatement": null,
+    });
+  }
+};
+

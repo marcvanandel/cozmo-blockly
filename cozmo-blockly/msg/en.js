@@ -18,6 +18,7 @@ var MSG = {
   catCozmoCubes: "Cozmo Cubes",
   catCozmoEvents: "Cozmo Events",
   catCozmoUtils: "Cozmo Utils",
+  catCozmoKad: "Cozmo Kad",
   listVariable: "list",
   textVariable: "text",
   httpRequestError: "There was a problem with the request.",

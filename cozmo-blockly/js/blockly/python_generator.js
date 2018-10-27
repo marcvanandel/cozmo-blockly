@@ -244,6 +244,12 @@ Blockly.Python['cozmo_free_will'] = function(block) {
   return code;
 };
 
+Blockly.Python['cozmo_stunt'] = function(block) {
+  var enable = block.getFieldValue('FREE_WILL');
+  var code = 'bot.enableFreeWill(' + enable + ')\n';
+  return code;
+};
+
 
 ////////////////////////////////////
 // Utils
