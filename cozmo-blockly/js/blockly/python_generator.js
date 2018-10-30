@@ -244,7 +244,25 @@ Blockly.Python['cozmo_free_will'] = function(block) {
   return code;
 };
 
-Blockly.Python['cozmo_stunt'] = function(block) {
+Blockly.Python['cozmo_marker_seen_number_boolean'] = function(block) {
+  var enable = block.getFieldValue('FREE_WILL');
+  var code = 'bot.enableFreeWill(' + enable + ')\n';
+  return code;
+};
+
+Blockly.Python['cozmo_marker_distance_to'] = function(block) {
+  var enable = block.getFieldValue('FREE_WILL');
+  var code = 'bot.enableFreeWill(' + enable + ')\n';
+  return code;
+};
+
+Blockly.Python['cozmo_marker_angle'] = function(block) {
+  var enable = block.getFieldValue('FREE_WILL');
+  var code = 'bot.enableFreeWill(' + enable + ')\n';
+  return code;
+};
+
+Blockly.Python['cozmo_park_on_marker_number'] = function(block) {
   var enable = block.getFieldValue('FREE_WILL');
   var code = 'bot.enableFreeWill(' + enable + ')\n';
   return code;

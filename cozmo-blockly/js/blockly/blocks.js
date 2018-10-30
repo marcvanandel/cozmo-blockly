@@ -41,6 +41,12 @@ var cubes = {
   "3": {"src": "img/thumbnails/cube3.png", "width": 13, "height": 11, "alt": "#3"}
 };
 
+var markers = {
+  "1": {"src": "img/thumbnails/circles2.png", "width": 13, "height": 11, "alt": "circles"},
+  "2": {"src": "img/thumbnails/triangles2.png", "width": 13, "height": 11, "alt": "triangles"},
+  "3": {"src": "img/thumbnails/diamonds2.png", "width": 13, "height": 11, "alt": "diamonds"}
+}
+
 // A hack to prevent rendering degree symbol as it is flaky.
 // This is done to make it easy to upgrade blockly (keep it intact).
 Blockly.FieldAngle.prototype.setText = function(text) {
@@ -645,35 +651,86 @@ Blockly.Blocks['cozmo_free_will'] = {
   }
 };
 
-Blockly.Blocks['cozmo_stunt'] = {
+Blockly.Blocks['cozmo_marker_seen_number_boolean'] = {
   init: function() {
     this.jsonInit({
-      "message0": "Stunt!",
+      "message0": "marker %1 been seen",
       "args0": [
         {
           "type": "field_dropdown",
-          "name": "ANIMATION",
+          "name": "MARKER_NUM",
           "options": [
-            ["greeting", "GREETING"],
-            ["sneeze", "SNEEZE"],
-            ["what?", "WHAT"],
-            ["win", "WIN"],
-            ["lose", "LOSE"],
-            ["facepalm", "FACEPALM"],
-            ["beeping", "BEEPING"],
-            ["new object", "NEW_OBJECT"],
-            ["lost something", "LOST_SOMETHING"],
-            ["reject", "REJECT"],
-            ["failed", "FAILED"],
-            ["excited greeting", "EXCITED_GREETING"],
-            ["talky greeting", "TALKY_GREETING"]
+            [markers["1"], "1"],
+            [markers["2"], "2"],
+            [markers["3"], "3"]
           ]
         }
       ],
+      "output": "Boolean",
       "colour": Blockly.Blocks.cozmo.HUE2,
-      "previousStatement": null,
-      "nextStatement": null,
     });
   }
 };
+
+Blockly.Blocks['cozmo_marker_distance_to'] = {
+  init: function() {
+    this.jsonInit({
+      "message0": "distance to marker %1 (cm)",
+      "args0": [
+        {
+          "type": "field_dropdown",
+          "name": "MARKER_NUM",
+          "options": [
+            [markers["1"], "1"],
+            [markers["2"], "2"],
+            [markers["3"], "3"]
+          ]
+        }
+      ],
+      "output": "Number",
+      "colour": Blockly.Blocks.cozmo.HUE2,
+    });
+  }
+};
+
+Blockly.Blocks['cozmo_marker_angle'] = {
+  init: function() {
+    this.jsonInit({
+      "message0": "angle to marker %1 (cm)",
+      "args0": [
+        {
+          "type": "field_dropdown",
+          "name": "MARKER_NUM",
+          "options": [
+            [markers["2"], "2"],
+            [markers["3"], "3"]
+          ]
+        }
+      ],
+      "output": "Number",
+      "colour": Blockly.Blocks.cozmo.HUE2,
+    });
+  }
+};
+
+Blockly.Blocks['cozmo_park_on_marker_number'] = {
+  init: function() {
+    this.jsonInit({
+      "message0": "park on marker %1",
+      "args0": [
+        {
+          "type": "field_dropdown",
+          "name": "MARKER_NUM",
+          "options": [
+            [markers["1"], "1"]
+          ]
+        }
+      ],
+      "previousStatement": null,
+      "nextStatement": null,
+      "colour": Blockly.Blocks.cozmo.HUE2,
+    });
+  }
+};
+
 
