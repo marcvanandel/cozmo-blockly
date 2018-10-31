@@ -1,5 +1,6 @@
 import cozmo
 from cozmo.util import degrees, radians, distance_mm, speed_mmps, Position, Pose, Rotation
+from cozmo.objects import CustomObject, CustomObjectMarkers, CustomObjectTypes
 import time
 import threading
 import math
@@ -52,6 +53,7 @@ class CozmoBot:
 				self.cubes_to_numbers[self._robot.world.light_cubes.get(key).object_id] = key
 			self.resetCubes()
 			self.resetCustomObjects()
+			self.setup_custom_objects()
 
 			self._robot.camera.image_stream_enabled = True
 
@@ -75,6 +77,38 @@ class CozmoBot:
 		cozmo.robot.Robot.drive_off_charger_on_connect = False
 		cozmo.connect(run)
 		self._robot = None
+
+	def setup_custom_objects(self):
+		# Kadaster markers
+
+		# define a unique box (50mm deep x 50mm width x1mm tall)
+		# with a different 40mm x 40mm image on each of the 6 faces
+		# only top is relevant
+		ground_obj = self._robot.world.define_custom_box(CustomObjectTypes.CustomType02,
+												CustomObjectMarkers.Circles4,   # front
+												CustomObjectMarkers.Circles3,   # back
+												CustomObjectMarkers.Circles2,   # top
+												CustomObjectMarkers.Circles5,   # bottom
+												CustomObjectMarkers.Hexagons2, # left
+												CustomObjectMarkers.Triangles3, # right
+												50, 50, 1,
+												40, 40, True)
+
+		# define a unique wall (250mm x 50mm (x10mm thick for all walls)
+		# with a 40mm x 40mm Triangles2 image on front and back
+		church_obj_1 = self._robot.world.define_custom_wall(CustomObjectTypes.CustomType03,
+												CustomObjectMarkers.Triangles2,  # front
+												50, 250,
+												40, 40, True)
+
+		# define a unique wall (250mm x 50mm (x10mm thick for all walls)
+		# with a 40mm x 40mm Triangles2 image on front and back
+		church_obj_2 = self._robot.world.define_custom_wall(CustomObjectTypes.CustomType04,
+												CustomObjectMarkers.Diamonds2,  # front
+												40, 200,
+												30, 30, True)
+		self.markers_to_numbers = {1: ground_obj, 2:church_obj_1, 3:church_obj_1}
+
 
 	def feedRobotDataInThread(self):
 		print('Starting data feed')
@@ -371,4 +405,64 @@ class CozmoBot:
 			'highlight': block
 		}
 		self._wsClient.send(json.dumps(data))
+
+# Kadaster additions
+
+	def getDistanceToMarker(self, marker_num):
+		'''
+		Returns the distance to the marker if it has been seen since the program start, or 100000 otherwise.
+		'''
+		if not self.getmarkerSeen(marker_num):
+			return 100000
+		marker = self._robot.world.light_markers[marker_num]
+		pos = self._robot.pose.position - marker.pose.position
+		dist = math.sqrt(pos.x * pos.x + pos.y * pos.y + pos.z * pos.z) / 10.0
+		return dist
+
+	def getAngleToMarker(self, marker_num):
+		'''
+		Returns the angle to the marker if it has been seen since the program start, or 100000 otherwise.
+		'''
+		if not self.getmarkerSeen(marker_num):
+			return 100000
+		marker = self._robot.world.light_markers[marker_num]
+		pos = self._robot.pose.position - marker.pose.position
+		dist = math.sqrt(pos.x * pos.x + pos.y * pos.y + pos.z * pos.z) / 10.0
+		return dist
+
+	def getMarkerSeen(self, marker_num):
+		'''
+		Returns whether marker has been seen since program start.
+		'''
+		print("searching for marker num [" + str(marker_num) + "]")
+		markerInstance = self.markers_to_numbers[marker_num]
+		print("searching for marker [" + str(markerInstance) + "]")
+		availableMarkers = self._robot.world.custom_objects
+		for m in availableMarkers:
+			print("marker [" + str(m) + "] available in robot")
+		marker = self._robot.world.custom_objects[19]
+		if marker.pose:
+			pos = marker.pose.position.x_y_z
+			return not (pos == (0.0, 0.0, 0.0))
+		else:
+			return False
+		# return False
+
+	def parkOnMarker(self, marker_num):
+		'''
+		Now this is tricky because the action is quite unreliable.
+		'''
+		# Ignore if marker has not been observed yet.
+		if not self.getMarkerSeen(marker_num):
+			print("[Bot] Ignoring parkOnMarker() as the marker has not been observed yet")
+			return False
+		marker = self._robot.world.light_markers[marker_num]
+		# res = self._robot.pickup_object(marker).wait_for_completed()
+		# print('parkOnMarker res:', res)
+		res = None
+		while res == None or (res.state == cozmo.action.ACTION_FAILED and res.failure_reason[1] in ["repeat", "aborted"]):
+		# while res == None or res.state == cozmo.action.ACTION_FAILED:
+			res = self._robot.pickup_object(marker).wait_for_completed()
+			print('parkOnMarker res:', res)
+		return res.state == cozmo.action.ACTION_SUCCEEDED
 

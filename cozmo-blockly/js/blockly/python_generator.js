@@ -245,9 +245,9 @@ Blockly.Python['cozmo_free_will'] = function(block) {
 };
 
 Blockly.Python['cozmo_marker_seen_number_boolean'] = function(block) {
-  var enable = block.getFieldValue('FREE_WILL');
-  var code = 'bot.enableFreeWill(' + enable + ')\n';
-  return code;
+  var num = block.getFieldValue('MARKER_NUM');
+  var code = "bot.getMarkerSeen(" + num + ")";
+  return [code, Blockly.Python.ORDER_ATOMIC];
 };
 
 Blockly.Python['cozmo_marker_distance_to'] = function(block) {
