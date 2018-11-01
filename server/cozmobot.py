@@ -34,6 +34,8 @@ emotions = {
 	"STARTLED": cozmo.anim.Triggers.ReactToUnexpectedMovement
 }
 
+ground_obj = None
+
 class CozmoBot:
 	def __init__(self, aruco):
 		self._robot = None
@@ -81,6 +83,26 @@ class CozmoBot:
 	def setup_custom_objects(self):
 		# Kadaster markers
 
+		def handle_object_appeared(evt, **kw):
+			# This will be called whenever an EvtObjectAppeared is dispatched -
+			# whenever an Object comes into view.
+			if isinstance(evt.obj, CustomObject):
+				print("Cozmo started seeing a %s" % str(evt.obj))
+				# marker = self._robot.world.custom_objects[evt.obj.object_id]
+				# marker.is_visible = True
+
+		def handle_object_disappeared(evt, **kw):
+			# This will be called whenever an EvtObjectAppeared is dispatched -
+			# whenever an Object comes into view.
+			if isinstance(evt.obj, CustomObject):
+				print("Cozmo stopped seeing a %s" % str(evt.obj))
+				# marker = self._robot.world.custom_objects[evt.obj.object_id]
+				# marker.is_visible = True
+
+		self._robot.add_event_handler(cozmo.objects.EvtObjectAppeared, handle_object_appeared)
+		self._robot.add_event_handler(cozmo.objects.EvtObjectDisappeared, handle_object_disappeared)
+
+
 		# define a unique box (50mm deep x 50mm width x1mm tall)
 		# with a different 40mm x 40mm image on each of the 6 faces
 		# only top is relevant
@@ -107,7 +129,10 @@ class CozmoBot:
 												CustomObjectMarkers.Diamonds2,  # front
 												40, 200,
 												30, 30, True)
-		self.markers_to_numbers = {1: ground_obj, 2:church_obj_1, 3:church_obj_1}
+		self.numbers_to_markers = {
+			1: CustomObjectTypes.CustomType02, 
+			2:CustomObjectTypes.CustomType03, 
+			3:CustomObjectTypes.CustomType04}
 
 
 	def feedRobotDataInThread(self):
@@ -412,9 +437,11 @@ class CozmoBot:
 		'''
 		Returns the distance to the marker if it has been seen since the program start, or 100000 otherwise.
 		'''
-		if not self.getmarkerSeen(marker_num):
-			return 100000
-		marker = self._robot.world.light_markers[marker_num]
+		marker = self.getMarkerFromObjects(marker_num)
+		print("MARKER: %s" % marker)
+		if (marker is None):
+			return None
+		
 		pos = self._robot.pose.position - marker.pose.position
 		dist = math.sqrt(pos.x * pos.x + pos.y * pos.y + pos.z * pos.z) / 10.0
 		return dist
@@ -423,9 +450,10 @@ class CozmoBot:
 		'''
 		Returns the angle to the marker if it has been seen since the program start, or 100000 otherwise.
 		'''
-		if not self.getmarkerSeen(marker_num):
+		if not self.getMarkerSeen(marker_num):
 			return 100000
-		marker = self._robot.world.light_markers[marker_num]
+		marker = getMarkerFromObjects(marker_num)
+		# marker = self._robot.world.light_markers[marker_num]
 		pos = self._robot.pose.position - marker.pose.position
 		dist = math.sqrt(pos.x * pos.x + pos.y * pos.y + pos.z * pos.z) / 10.0
 		return dist
@@ -434,19 +462,25 @@ class CozmoBot:
 		'''
 		Returns whether marker has been seen since program start.
 		'''
-		print("searching for marker num [" + str(marker_num) + "]")
-		markerInstance = self.markers_to_numbers[marker_num]
-		print("searching for marker [" + str(markerInstance) + "]")
-		availableMarkers = self._robot.world.custom_objects
-		for m in availableMarkers:
-			print("marker [" + str(m) + "] available in robot")
-		marker = self._robot.world.custom_objects[19]
-		if marker.pose:
+		marker = self.getMarkerFromObjects(marker_num)
+		if marker is not None and marker.pose:
 			pos = marker.pose.position.x_y_z
+			# print("pos of marker: " + str(pos))
 			return not (pos == (0.0, 0.0, 0.0))
 		else:
 			return False
 		# return False
+
+	def getMarkerFromObjects(self, marker_num):
+		objectTypeSearchingFor = self.numbers_to_markers[marker_num]
+		marker = None
+		objs = self._robot.world._objects
+		for m in objs:
+			ob = self._robot.world._objects[m]
+			if self.getCubeNumber(ob) is None and ob.object_type is objectTypeSearchingFor:
+				print("GOT THE MARKER!! " + str(ob))
+				marker = ob
+		return marker
 
 	def parkOnMarker(self, marker_num):
 		'''
