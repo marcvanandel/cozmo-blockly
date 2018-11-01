@@ -726,9 +726,9 @@ Blockly.Blocks['cozmo_park_on_marker_number'] = {
           ]
         }
       ],
+      "colour": Blockly.Blocks.cozmo.HUE2,
       "previousStatement": null,
       "nextStatement": null,
-      "colour": Blockly.Blocks.cozmo.HUE2,
     });
   }
 };

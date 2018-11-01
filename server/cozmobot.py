@@ -438,7 +438,6 @@ class CozmoBot:
 		Returns the distance to the marker if it has been seen since the program start, or 100000 otherwise.
 		'''
 		marker = self.getMarkerFromObjects(marker_num)
-		print("MARKER: %s" % marker)
 		if (marker is None):
 			return None
 		
@@ -487,16 +486,9 @@ class CozmoBot:
 		Now this is tricky because the action is quite unreliable.
 		'''
 		# Ignore if marker has not been observed yet.
-		if not self.getMarkerSeen(marker_num):
-			print("[Bot] Ignoring parkOnMarker() as the marker has not been observed yet")
-			return False
-		marker = self._robot.world.light_markers[marker_num]
-		# res = self._robot.pickup_object(marker).wait_for_completed()
-		# print('parkOnMarker res:', res)
-		res = None
-		while res == None or (res.state == cozmo.action.ACTION_FAILED and res.failure_reason[1] in ["repeat", "aborted"]):
-		# while res == None or res.state == cozmo.action.ACTION_FAILED:
-			res = self._robot.pickup_object(marker).wait_for_completed()
-			print('parkOnMarker res:', res)
+		marker = self.getMarkerFromObjects(marker_num)
+		if (marker is None):
+			return
+		res = self._robot.go_to_pose(marker.pose).wait_for_completed()
 		return res.state == cozmo.action.ACTION_SUCCEEDED
 

@@ -263,8 +263,8 @@ Blockly.Python['cozmo_marker_angle'] = function(block) {
 };
 
 Blockly.Python['cozmo_park_on_marker_number'] = function(block) {
-  var enable = block.getFieldValue('FREE_WILL');
-  var code = 'bot.enableFreeWill(' + enable + ')\n';
+  var num = block.getFieldValue('MARKER_NUM');
+  var code = "bot.parkOnMarker(" + num + ")\n";
   return code;
 };
 
