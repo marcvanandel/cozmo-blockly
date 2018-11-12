@@ -733,4 +733,26 @@ Blockly.Blocks['cozmo_park_on_marker_number'] = {
   }
 };
 
+Blockly.Blocks['cozmo_invalidate_pose'] = {
+  init: function() {
+    this.jsonInit({
+      "message0": "invalidate position of marker %1",
+      "args0": [
+        {
+          "type": "field_dropdown",
+          "name": "MARKER_NUM",
+          "options": [
+            [markers["1"], "1"],
+            [markers["2"], "2"],
+            [markers["3"], "3"]
+          ]
+        }
+      ],
+      "colour": Blockly.Blocks.cozmo.HUE2,
+      "previousStatement": null,
+      "nextStatement": null,
+    });
+  }
+};
+
 

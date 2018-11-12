@@ -34,8 +34,6 @@ emotions = {
 	"STARTLED": cozmo.anim.Triggers.ReactToUnexpectedMovement
 }
 
-ground_obj = None
-
 class CozmoBot:
 	def __init__(self, aruco):
 		self._robot = None
@@ -44,6 +42,7 @@ class CozmoBot:
 		self._camClient = None
 		self._wsClient = None
 		self._aruco = aruco
+		self._ground_obj_pose = None
 
 	def start(self, code):
 		def run(sdk_conn):
@@ -86,21 +85,26 @@ class CozmoBot:
 		def handle_object_appeared(evt, **kw):
 			# This will be called whenever an EvtObjectAppeared is dispatched -
 			# whenever an Object comes into view.
-			if isinstance(evt.obj, CustomObject):
-				print("Cozmo started seeing a %s" % str(evt.obj))
-				# marker = self._robot.world.custom_objects[evt.obj.object_id]
-				# marker.is_visible = True
+			if isinstance(evt.obj, CustomObject) and evt.obj.object_type == CustomObjectTypes.CustomType02:
+				self._ground_obj_pose = evt.obj.pose
+				print("APPEARED: ", evt)
 
 		def handle_object_disappeared(evt, **kw):
 			# This will be called whenever an EvtObjectAppeared is dispatched -
 			# whenever an Object comes into view.
-			if isinstance(evt.obj, CustomObject):
-				print("Cozmo stopped seeing a %s" % str(evt.obj))
-				# marker = self._robot.world.custom_objects[evt.obj.object_id]
-				# marker.is_visible = True
+			if isinstance(evt.obj, CustomObject) and evt.obj.object_type == CustomObjectTypes.CustomType02:
+				# self._ground_obj_pose = evt.obj.pose
+				print("DISAPPEARED: ", evt)
 
-		self._robot.add_event_handler(cozmo.objects.EvtObjectAppeared, handle_object_appeared)
-		self._robot.add_event_handler(cozmo.objects.EvtObjectDisappeared, handle_object_disappeared)
+		def handle_object_observed(evt, **kw):
+			if isinstance(evt.obj, CustomObject) and evt.obj.object_type == CustomObjectTypes.CustomType02:
+				self._ground_obj_pose = evt.obj.pose
+				print("OBSERVED: ", evt )
+
+
+		# self._robot.add_event_handler(cozmo.objects.EvtObjectAppeared, handle_object_appeared)
+		# self._robot.add_event_handler(cozmo.objects.EvtObjectDisappeared, handle_object_disappeared)
+		# self._robot.add_event_handler(cozmo.objects.EvtObjectObserved, handle_object_observed)
 
 
 		# define a unique box (50mm deep x 50mm width x1mm tall)
@@ -285,7 +289,7 @@ class CozmoBot:
 		res = None
 		while res == None or (res.state == cozmo.action.ACTION_FAILED and res.failure_reason[1] in ["repeat", "aborted"]):
 		# while res == None or res.state == cozmo.action.ACTION_FAILED:
-			res = self._robot.pickup_object(cube).wait_for_completed()
+			res = self._robot.pickup_object(cube, num_retries=3).wait_for_completed()
 			print('pickupCube res:', res)
 		return res.state == cozmo.action.ACTION_SUCCEEDED
 
@@ -348,7 +352,7 @@ class CozmoBot:
 
 	def turn(self, angle):
 		print("[Bot] Executing turn " + str(angle))
-		res = self._robot.turn_in_place(degrees(angle)).wait_for_completed()
+		res = self._robot.turn_in_place(degrees(angle), speed=degrees(50), angle_tolerance=degrees(1)).wait_for_completed()
 		print("[Bot] turn finished")
 		return res.state == cozmo.action.ACTION_SUCCEEDED
 
@@ -375,7 +379,7 @@ class CozmoBot:
 		self._robot.drive_wheels(lSpeed * 10, rSpeed * 10)
 
 	def driveTo(self, x, y):
-		print("[Bot] Executing driveTo(" + str(x) + ", " + str(y) + ")")
+		print("[Bot] Executivar num = block.getFieldValue('MARKER_NUM');ng driveTo(" + str(x) + ", " + str(y) + ")")
 		pose = Pose(x * 10, y * 10, 0, angle_z=self._robot.pose.rotation.angle_z)
 		res = self._robot.go_to_pose(self._origin.define_pose_relative_this(pose)).wait_for_completed()
 		print("[Bot] driveTo finished")
@@ -477,7 +481,7 @@ class CozmoBot:
 		for m in objs:
 			ob = self._robot.world._objects[m]
 			if self.getCubeNumber(ob) is None and ob.object_type is objectTypeSearchingFor:
-				print("GOT THE MARKER!! " + str(ob))
+				# print("GOT THE MARKER!! " + str(ob))
 				marker = ob
 		return marker
 
@@ -486,9 +490,26 @@ class CozmoBot:
 		Now this is tricky because the action is quite unreliable.
 		'''
 		# Ignore if marker has not been observed yet.
-		marker = self.getMarkerFromObjects(marker_num)
+		marker =  self.getMarkerFromObjects(marker_num)
 		if (marker is None):
 			return
 		res = self._robot.go_to_pose(marker.pose).wait_for_completed()
+
 		return res.state == cozmo.action.ACTION_SUCCEEDED
+
+	def invalidatePoseOfMarker(self, marker_num):
+		'''
+		Now this is tricky because the action is quite unreliable.
+		'''
+		# Ignore if marker has not been observed yet.
+		marker =  self.getMarkerFromObjects(marker_num)
+		print("[Bot] invalidating pose of [" + str(marker) + "]")
+		if (marker is None):
+			return
+		
+		marker.pose.invalidate()
+
+		marker =  self.getMarkerFromObjects(marker_num)
+		print("[Bot] pose of (after invalidation) [" + str(marker) + "]")
+		return True
 

@@ -268,6 +268,12 @@ Blockly.Python['cozmo_park_on_marker_number'] = function(block) {
   return code;
 };
 
+Blockly.Python['cozmo_invalidate_pose'] = function(block) {
+  var num = block.getFieldValue('MARKER_NUM');
+  var code = "bot.invalidatePoseOfMarker(" + num + ")\n";
+  return code;
+};
+
 
 ////////////////////////////////////
 // Utils
