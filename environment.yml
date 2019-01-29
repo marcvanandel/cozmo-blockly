@@ -1,0 +1,11 @@
+name: cozmo
+channels:
+  - conda-forge
+dependencies:
+  - python=3.7
+  - nodejs
+  # - cozmo[camera] -> pip install
+  - tornado
+  - ws4py
+  - flask
+  - requests
